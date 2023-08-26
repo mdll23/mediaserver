@@ -1,0 +1,139 @@
+---
+version: "2.1"
+services:
+  db:
+    image: 'postgres:latest'
+    container_name: database
+    env_file:
+      - .env
+    volumes:
+      - /opt/data/config/postgres:/var/lib/postgresql/data/
+    ports:
+      - 127.0.0.1:5432:5432
+    networks:
+      - mediaserver
+    restart: unless-stopped
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin
+    container_name: jellyfin
+    env_file:
+      - .jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - /opt/data/config/jellyfin:/config
+      - /opt/data/serien:/data/tvshows
+      - /opt/data/filme:/data/movies
+      - /opt/data/sports:/data/sports
+      - /opt/data/musik:/data/music
+    ports:
+      - 127.0.0.1:8096:8096
+    networks:
+      - mediaserver
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - /opt/data/config/sonarr:/config
+      - /opt/data/serien:/tv
+      - /opt/data/downloads:/downloads
+    ports:
+      - 127.0.0.1:8989:8989
+    networks:
+      - mediaserver
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/vienna
+    volumes:
+      - /opt/data/config/radarr:/config
+      - /opt/data/filme:/movies
+      - /opt/data/downloads:/downloads
+    ports:
+      - 127.0.0.1:7878:7878
+    networks:
+      - mediaserver
+    restart: unless-stopped
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr
+    container_name: lidarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/vienna
+    volumes:
+      - /opt/data/config/lidarr:/config
+      - /opt/data/musik:/music
+      - /opt/data/downloads:/downloads
+    ports:
+      - 127.0.0.1:8686:8686
+    networks:
+      - mediaserver
+    restart: unless-stopped
+
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd
+    container_name: sabnzbd
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - /opt/data/config/sabnzbd:/config
+      - /opt/data/downloads:/downloads
+      - /opt/data/downloading:/incomplete-downloads
+    ports:
+      - 127.0.0.1:8080:8080
+    networks:
+      - mediaserver
+    restart: unless-stopped
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:develop
+    container_name: jellyseerr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+      - LOG_LEVEL=debug
+    volumes:
+      - /opt/data/config/jellyseerr:/app/config
+    ports:
+      - 127.0.0.1:5055:5055
+    networks:
+      - mediaserver
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - /opt/data/config/prowlarr:/config
+    ports:
+      - 127.0.0.1:9696:9696
+    networks:
+      - mediaserver
+    restart: unless-stopped
+
+networks:
+  mediaserver:
+    driver: bridge
